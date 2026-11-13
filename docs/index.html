@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Two Button Fishing Pad – Flasher</title>
+  <script type="module" src="https://unpkg.com/esp-web-tools@10.5.2/dist/web/install-button.js?module"></script>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 40rem; margin: 2rem auto; padding: 0 1rem; line-height: 1.5; }
+  </style>
+</head>
+<body>
+  <h1>Two Button Fishing Pad</h1>
+  <p>Flash the firmware to a <strong>LilyGO / TTGO T-Display v1.1</strong> directly from your browser.</p>
+  <ol>
+    <li>Use <strong>Chrome or Edge</strong> on a computer (Firefox and Safari lack Web Serial).</li>
+    <li>Plug the board in with a USB <em>data</em> cable.</li>
+    <li>Click <em>Install</em>, choose the board's serial port, and wait about a minute.</li>
+    <li>Pair it with your phone as an <strong>Xbox Wireless Controller</strong>.</li>
+  </ol>
+  <esp-web-install-button manifest="manifest.json">
+    <span slot="unsupported">This browser can't flash devices. Use Chrome or Edge on a computer.</span>
+  </esp-web-install-button>
+  <p><small>Not working? See the troubleshooting section of the
+  <a href="https://github.com/Lanjelin/esp32-fishing#install-without-building">README</a>.</small></p>
+</body>
+</html>

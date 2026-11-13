@@ -44,7 +44,50 @@ Change `xButton{0}` / `leftButton{35}` for different GPIOs. Edit the `Cast` / `R
 strings in the drawing functions to rename the labels. Rebuild and flash afterward.
 Do not hold GPIO 0 while powering on: it also selects the ESP32 bootloader.
 
-## Build and flash
+## Install without building
+
+The easiest way, on **Windows, macOS and Linux**, needs no tools or compiling.
+A ready-made firmware is in [`docs/firmware/`](docs/firmware/TwoButtonPad-t-display-v1.1.bin)
+(checksum in [`SHA256SUMS`](docs/firmware/SHA256SUMS)).
+
+### Browser flasher (recommended)
+
+1. Open the **[web flasher](https://lanjelin.github.io/esp32-fishing/)** in **Chrome or
+   Edge** on a computer. Firefox and Safari cannot flash devices.
+2. Plug the T-Display into the computer with a USB **data** cable.
+3. Click **Install**, pick the board's serial port (e.g. *USB Serial*, *CP210x* or
+   *CH340*, or `COMx` on Windows), and confirm. It takes about a minute.
+4. Pair the pad with your phone as **Xbox Wireless Controller**.
+
+The page uses [ESP Web Tools](https://esphome.github.io/esp-web-tools/): the firmware is
+sent from your browser straight to the board over USB, and nothing is installed.
+The installer offers an **Erase device** checkbox. Tick it for a clean first install; it
+also removes earlier pairings, so remove the pad from your phone's Bluetooth list and pair again.
+
+**No serial port listed?**
+
+- Try another cable; many are charge-only.
+- **Windows:** install the USB driver for your board's chip, either
+  [CP210x](https://www.silabs.com/developer-tools/usb-to-uart-bridge-vcp-drivers) or
+  [CH340/CH9102](https://www.wch-ic.com/downloads/CH341SER_EXE.html). Windows 10 and 11
+  often install it automatically.
+- **Linux:** add yourself to the serial group (`dialout` on Debian/Ubuntu/Fedora,
+  `uucp` on Arch), then log out and in again.
+- If connecting fails, hold the lower button (GPIO 0) while plugging the board in, click
+  **Install** again, and release once flashing starts.
+
+### Command line
+
+With [esptool](https://github.com/espressif/esptool) (`pip install esptool`):
+
+```sh
+esptool --chip esp32 --port /dev/ttyACM0 write-flash 0x0 \
+  docs/firmware/TwoButtonPad-t-display-v1.1.bin
+```
+
+Use `COM3` or similar on Windows. The firmware targets the original T-Display v1.1 only.
+
+## Build from source
 
 Requires Arduino CLI, **esp32:esp32 3.3.10**, and **M5GFX 0.2.19**.
 NimBLE and the patched ESP32-BLE-Gamepad library are included under `libraries/`;

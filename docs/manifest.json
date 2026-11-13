@@ -1,0 +1,11 @@
+{
+  "name": "Two Button Fishing Pad",
+  "version": "1.0",
+  "new_install_prompt_erase": true,
+  "builds": [
+    {
+      "chipFamily": "ESP32",
+      "parts": [{ "path": "firmware/TwoButtonPad-t-display-v1.1.bin", "offset": 0 }]
+    }
+  ]
+}
