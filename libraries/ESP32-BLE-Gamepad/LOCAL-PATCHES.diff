@@ -1,0 +1,24 @@
+diff --git a/BleGamepad.cpp b/BleGamepad.cpp
+index fbd1224..8a2c149 100644
+--- a/BleGamepad.cpp
++++ b/BleGamepad.cpp
+@@ -2507,7 +2507,10 @@ void BleGamepad::taskServer(void *pvParameter)
+ 
+   NimBLEDevice::init(BleGamepadInstance->deviceName);
+   NimBLEDevice::setPower(BleGamepadInstance->configuration.getTXPowerLevel()); // Set transmit power for advertising (Range: -12 to +9 dBm)
++  // Original ESP32 supports only LE 1M PHY.
++#if !CONFIG_IDF_TARGET_ESP32
+   NimBLEDevice::setDefaultPhy(BLE_GAP_LE_PHY_2M_MASK, BLE_GAP_LE_PHY_2M_MASK);
++#endif
+   NimBLEServer *pServer = NimBLEDevice::createServer();
+   pServer->setCallbacks(BleGamepadInstance->connectionStatus);
+   pServer->advertiseOnDisconnect(true);
+@@ -2656,6 +2659,8 @@ void BleGamepad::taskServer(void *pvParameter)
+   BleGamepadInstance->onStarted(pServer);
+ 
+   NimBLEAdvertising *pAdvertising = pServer->getAdvertising();
++  // Put the long controller name in scan response, leaving space for HID UUID.
++  pAdvertising->enableScanResponse(true);
+   pAdvertising->setAppearance(HID_GAMEPAD);
+   pAdvertising->setName(BleGamepadInstance->deviceName);
+   pAdvertising->addServiceUUID(BleGamepadInstance->hid->getHidService()->getUUID());

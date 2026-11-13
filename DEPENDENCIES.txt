@@ -1,0 +1,5 @@
+ESP32-BLE-Gamepad f97085e5863f4c18dada0bd5215736f94d39526e
+esp32:esp32 3.3.10
+NimBLE-Arduino 2.5.1 (5ae2c43f62c5a588a25c1de68f7d17b6f3b75adb)
+M5GFX 0.2.19
+ESP32-BLE-Gamepad local patches: skip LE2M PHY on original ESP32; enable advertising scan response for controller name. See libraries/ESP32-BLE-Gamepad/LOCAL-PATCHES.diff.
