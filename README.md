@@ -6,6 +6,8 @@ sent directly as a controller input—there is no bite detection or automatic fi
 
 ![Two Button Fishing Pad UI](assets/ui.png)
 
+![The assembled pad in its 3D-printed enclosure](assets/enclosure.jpg)
+
 ## Hardware
 
 Tested on the **original LilyGO / TTGO T-Display v1.1**: ESP32, 135×240 ST7789 LCD,
