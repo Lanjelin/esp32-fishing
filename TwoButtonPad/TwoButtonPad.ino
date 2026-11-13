@@ -1,6 +1,7 @@
 // Original LilyGO T-Display v1.1 (ESP32, not S3).
 #include <Arduino.h>
 #include <Preferences.h>
+#include <esp_random.h>
 #include <BleGamepad.h>
 #include <NimBLEDevice.h>
 #include <M5GFX.h>
@@ -182,12 +183,27 @@ void loop() {
   bool connected = pad.isConnected();
   bool changedConnection = connected != previousConnection;
   // Consume the mode-switch gesture before building any HID report.
-  bool modeChanged = inputRouter.update(now, xButton.down, leftButton.down);
+  if (changedConnection && connected) inputRouter.restartReportTiming();
+  // Sample independently for each new press; the router latches the value once.
+  const uint32_t minimumMs = 60 + esp_random() % 21;
+  bool modeChanged = inputRouter.update(now, xButton.down, leftButton.down, minimumMs);
+  // Let offline gestures expire instead of queueing old taps until reconnection.
+  if (!connected) inputRouter.noteReportSent(now);
   if (modeChanged) {
     neutralMode = !neutralMode;
     uiPreferences.putBool("neutral", neutralMode);
     Serial.printf("Display mode: %s\n", neutralMode ? "neutral" : "fishing");
   }
+  // Refresh the complete state on reconnect and periodically: no stale held inputs.
+  if (connected && (inputRouter.output != previousHid || changedConnection || now - lastReport >= 100)) {
+    if (inputRouter.output & 1) pad.press(REEL_BUTTON); else pad.release(REEL_BUTTON);
+    pad.setHat1((inputRouter.output & 2) ? CAST_DIRECTION : HAT_CENTERED);
+    pad.sendReport();
+    inputRouter.noteReportSent(millis());
+    previousHid = inputRouter.output;
+    lastReport = now;
+  }
+
   const uint32_t second = now / 1000;
   if (modeChanged || (neutralMode && (second != displayedSecond || changedConnection))) {
     if (neutralMode && !modeChanged && !changedConnection) drawTimer(connected, false);
@@ -202,14 +218,6 @@ void loop() {
       if (changedLeft) tile(49, "Cast", leftButton.down, TFT_GREEN);
       if (changedX) tile(93, "Reel", xButton.down, TFT_CYAN);
     }
-  }
-  // Refresh the complete state on reconnect and periodically: no stale held inputs.
-  if (connected && (inputRouter.output != previousHid || changedConnection || now - lastReport >= 100)) {
-    if (inputRouter.output & 1) pad.press(REEL_BUTTON); else pad.release(REEL_BUTTON);
-    pad.setHat1((inputRouter.output & 2) ? CAST_DIRECTION : HAT_CENTERED);
-    pad.sendReport();
-    previousHid = inputRouter.output;
-    lastReport = now;
   }
   // Keep the validated display fully lit.
   digitalWrite(4, HIGH);

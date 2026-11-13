@@ -1,49 +1,64 @@
 #include "../TwoButtonPad/InputRouter.h"
 #include <cassert>
+
 int main() {
-  InputRouter a;
-  assert(!a.update(0,true,false) && a.output == 0);
-  assert(a.update(60,true,true) && a.output == 0);
-  assert(!a.update(200,true,true) && a.output == 0);
-  assert(!a.update(220,false,true) && a.output == 0);
-  assert(!a.update(240,true,true) && a.output == 0);
-  a.update(260,false,false);
-  assert(a.update(280,true,true) && a.output == 0);
-  a.update(300,false,false);
-  a.update(400,true,false);
-  assert(!a.update(499,true,false) && a.output == 0);
-  assert(!a.update(500,true,false) && a.output == 1);
-  a.update(510,false,false); assert(a.output == 0);
-  a.update(600,false,true);
-  a.update(630,false,false); assert(a.output == 2);
-  a.update(649,false,false); assert(a.output == 2);
-  a.update(650,false,false); assert(a.output == 0);
-  // A second quick single tap is queued rather than lost during the first pulse.
-  a.update(700,true,false);
-  a.update(730,false,false); assert(a.output == 1);
-  a.update(735,false,true);
-  a.update(740,false,false);
-  a.update(750,false,false); assert(a.output == 0);
-  a.update(770,false,false); assert(a.output == 2);
-  a.update(790,false,false); assert(a.output == 0);
-  // A later second press never produces a simultaneous HID report either.
-  a.update(800,true,false); a.update(900,true,false); assert(a.output == 1);
-  assert(a.update(950,true,true) && a.output == 0);
-  a.update(960,false,false);
-  a.update(UINT32_MAX-50,true,false);
-  a.update(49,true,false); assert(a.output == 1);
-  InputRouter b;
-  b.update(0,true,false); b.update(30,false,false);
-  b.update(35,false,true);
-  assert(b.update(40,true,true) && b.output == 0);
-  b.update(50,false,false);
-  b.update(60,true,false); b.update(80,false,false);
-  b.update(100,false,false); assert(b.output == 0);
-  b.update(120,false,false); assert(b.output == 0); // no stale queued Cast
-  InputRouter c;
-  c.update(0,true,false); c.update(30,false,false); assert(c.output == 1);
-  c.update(35,true,false); c.update(45,false,false);
-  c.update(50,false,false); assert(c.output == 0);
-  c.update(70,false,false); assert(c.output == 1); // distinct repeated Reel tap
-  c.update(90,false,false); assert(c.output == 0);
+  // Every selectable duration, for a short tap and the former 5ms edge case.
+  for (uint32_t duration = 60; duration <= 80; ++duration) {
+    InputRouter tap;
+    tap.update(0,true,false,duration);
+    tap.update(40,false,false,duration); assert(tap.output == 1);
+    tap.noteReportSent(50); // submission delayed by work in the main loop
+    tap.update(50+duration-1,false,false,60); assert(tap.output == 1);
+    tap.noteReportSent(50+duration-1); // refresh must NOT restart the minimum
+    tap.update(50+duration,false,false,80); assert(tap.output == 0);
+
+    InputRouter edge;
+    edge.update(0,true,false,duration);
+    edge.update(100,true,false,duration); assert(edge.output == 1);
+    edge.noteReportSent(100);
+    edge.update(105,false,false,duration); assert(edge.output == 1);
+    edge.update(100+duration-1,false,false,duration); assert(edge.output == 1);
+    edge.update(100+duration,false,false,duration); assert(edge.output == 0);
+  }
+  InputRouter hold;
+  hold.update(0,false,true,60); hold.update(100,false,true,60);
+  hold.noteReportSent(100);
+  hold.update(1000,false,true,80); assert(hold.output == 2);
+  hold.update(1001,false,false,80); assert(hold.output == 0);
+
+  InputRouter chord;
+  chord.update(0,true,false);
+  assert(chord.update(60,true,true) && chord.output == 0);
+  assert(!chord.update(300,true,true) && chord.output == 0);
+  chord.update(310,false,true); assert(chord.output == 0);
+  assert(!chord.update(320,true,true));
+  chord.update(330,false,false);
+  assert(chord.update(340,true,true) && chord.output == 0);
+
+  // An overlapping second button never reaches HID; finish an existing minimum.
+  InputRouter late;
+  late.update(0,true,false,80); late.update(100,true,false,80);
+  late.noteReportSent(100);
+  assert(late.update(105,true,true,60) && late.output == 1);
+  late.update(110,false,false,60); assert(late.output == 1);
+  late.update(180,false,false,60); assert(late.output == 0);
+
+  // A repeated quick tap has a separate release report and minimum of its own.
+  InputRouter queue;
+  queue.update(0,true,false,60); queue.update(30,false,false,60);
+  queue.noteReportSent(30);
+  queue.update(40,true,false,80); queue.update(60,false,false,80);
+  queue.update(90,false,false,80); assert(queue.output == 0);
+  queue.update(109,false,false,80); assert(queue.output == 0);
+  queue.update(110,false,false,80); assert(queue.output == 1);
+  queue.noteReportSent(110);
+  queue.update(189,false,false,60); assert(queue.output == 1);
+  queue.update(190,false,false,60); assert(queue.output == 0);
+
+  InputRouter wrap;
+  wrap.update(UINT32_MAX-200,true,false,60);
+  wrap.update(UINT32_MAX-100,true,false,60);
+  wrap.noteReportSent(UINT32_MAX-20);
+  wrap.update(38,false,false,60); assert(wrap.output == 1);
+  wrap.update(39,false,false,60); assert(wrap.output == 0);
 }
