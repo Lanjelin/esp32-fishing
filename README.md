@@ -6,7 +6,7 @@ sent directly as a controller input—there is no bite detection or automatic fi
 
 ![Two Button Fishing Pad UI](assets/ui.png)
 
-![The assembled pad in its 3D-printed enclosure](assets/enclosure.jpg)
+<img src="assets/enclosure.jpg" alt="The assembled pad in its 3D-printed enclosure" width="240">
 
 ## Hardware
 
