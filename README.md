@@ -24,6 +24,16 @@ Confirmed working with an **iPhone 16 and GeForce NOW**. Pair as
 
 The display shows BLE status and highlights held buttons.
 
+### Controller mode
+
+This uses WoW's built-in controller support. With Soft Targeting on, the game itself
+targets the fishing bobber when it lands, so the Reel button is just the normal Interact
+input. The pad doesn't detect bites or target anything on its own.
+
+Controller mode must be enabled in the game's settings first, if it isn't already. See
+[Playing WoW with a controller](https://www.icy-veins.com/wow-forever/playing-with-controller)
+for setup.
+
 **Press both buttons together** to switch between the fishing UI and an understated
 **desk timer**. The timer shows elapsed time since power-on, not wall-clock time.
 Single-button controls keep working in either mode. The combined press is consumed
