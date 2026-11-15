@@ -6,8 +6,8 @@
 class InputRouter {
 public:
   static constexpr uint32_t chordWindowMs = 100;
-  static constexpr uint32_t minimumPressMinMs = 60;
-  static constexpr uint32_t minimumPressMaxMs = 80;
+  static constexpr uint32_t minimumPressMinMs = 150;
+  static constexpr uint32_t minimumPressMaxMs = 210;
   static constexpr uint32_t releaseGapMs = 20;
   uint8_t output = 0; // bit 0 = Reel, bit 1 = Cast; never both together.
 
@@ -16,7 +16,7 @@ public:
   }
   void restartReportTiming() { reported = false; }
 
-  bool update(uint32_t now, bool reel, bool cast, uint32_t requestedMinimumMs = 70) {
+  bool update(uint32_t now, bool reel, bool cast, uint32_t requestedMinimumMs = 180) {
     const uint8_t held = (reel ? 1 : 0) | (cast ? 2 : 0);
     const uint8_t oldHeld = lastHeld;
     lastHeld = held;
@@ -70,7 +70,7 @@ public:
 private:
   enum State { Idle, Pending, Active, Pulse, Gap, Chord } state = Idle;
   uint8_t candidate = 0, queued = 0, lastHeld = 0;
-  uint32_t since = 0, outputSince = 0, minimumMs = 70;
+  uint32_t since = 0, outputSince = 0, minimumMs = 180;
   bool reported = false;
 
   bool minimumElapsed(uint32_t now) const {

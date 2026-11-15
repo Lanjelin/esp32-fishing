@@ -1,0 +1,27 @@
+[
+  {
+    "id": 569285,
+    "url": "https://wow.zamimg.com/sound-ids/live/enus/197/569285/FishingBobber_ver2_1.ogg",
+    "bytes": 25281,
+    "sha256": "81cf293227c2d1630a4906447504398d48f96a32af7edeb477bfb87060d307ea"
+  },
+  {
+    "id": 568970,
+    "url": "https://wow.zamimg.com/sound-ids/live/enus/138/568970/FishingBobber_ver2_2.ogg",
+    "bytes": 21223,
+    "sha256": "b29b49f16d88d58bea7dddb2d9662cf587aa38fb6e99ee0306c965e278a14b74"
+  },
+  {
+    "id": 569044,
+    "url": "https://wow.zamimg.com/sound-ids/live/enus/212/569044/FishingBobber_ver2_3.ogg",
+    "bytes": 22427,
+    "sha256": "37f275fdf10eda552086fd78c9553fd5b3ca7552ed5a72b5ca9b3932dc3c1679"
+  },
+  {
+    "id": 569816,
+    "url": "https://wow.zamimg.com/sound-ids/classic/enus/216/569816/FishBite.ogg",
+    "bytes": 17557,
+    "sha256": "d84c60a6535f6a1f592fa6ba43988a247f7db918b6df7d2211fc2e2bf183bffc",
+    "kit_url": "https://www.wowhead.com/classic/sound=3355/fishing-hooked"
+  }
+]
