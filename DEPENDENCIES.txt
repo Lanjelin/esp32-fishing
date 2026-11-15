@@ -1,6 +1,22 @@
-ESP32-BLE-Gamepad f97085e5863f4c18dada0bd5215736f94d39526e
-esp32:esp32 3.3.10
-NimBLE-Arduino 2.5.1 (5ae2c43f62c5a588a25c1de68f7d17b6f3b75adb)
-M5GFX 0.2.19
-ESP32-BLE-Gamepad local patches: skip LE2M PHY on original ESP32; enable advertising scan response for controller name. See libraries/ESP32-BLE-Gamepad/LOCAL-PATCHES.diff.
-gone-fishing branch: Arduino-ESP32 built-in Bluedroid BLE + ESP-IDF A2DP APIs; no NimBLE or BleGamepad runtime. Uses the vendored Xbox HID descriptor only.
+Current firmware build requirements:
+- Arduino CLI and Bash (for build.sh)
+- esp32:esp32 3.3.10 (includes the Bluetooth stack and target toolchain)
+- M5GFX 0.2.19
+
+Vendored source used by the current firmware:
+- ESP32-BLE-Gamepad f97085e5863f4c18dada0bd5215736f94d39526e
+  Uses BleXInputDescriptors.h only; the BleGamepad runtime is not compiled.
+  Retain the project's included license.
+- No separate BLE library installation is required; the firmware uses the
+  Arduino-ESP32 core's built-in Bluedroid Bluetooth APIs.
+
+Legacy vendored components retained, but not used by the current runtime:
+- NimBLE-Arduino 2.5.1 (5ae2c43f62c5a588a25c1de68f7d17b6f3b75adb)
+- ESP32-BLE-Gamepad local runtime patches: skip LE2M PHY on original ESP32;
+  enable advertising scan response for controller name. Historical patch:
+  libraries/ESP32-BLE-Gamepad/LOCAL-PATCHES.diff
+
+Optional host tools for regenerating reference features and running checks:
+- Python 3, ffmpeg, and a host C++17 compiler
+- The generated feature header is committed; these optional tools are not
+  required for a normal firmware build using build.sh.
