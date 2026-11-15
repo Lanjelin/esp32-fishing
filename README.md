@@ -1,8 +1,8 @@
 # ESP32 Fishing
 
 A pocket-sized, two-button Bluetooth fishing controller for World of Warcraft.
-Cast your line with one button and reel/interact with the other. Each press is
-sent directly as a controller input—there is no bite detection or automatic fishing.
+Cast your line with one button and reel/interact with the other. Button presses
+are sent as standard controller inputs.
 
 ![Two Button Fishing Pad UI](assets/ui.png)
 
@@ -15,20 +15,28 @@ and two onboard buttons. No extra wiring needed. The T-Display **S3 is not a
 drop-in replacement**; other ESP32 boards need compatible display/pin settings.
 
 Confirmed working with an **iPhone 16 and GeForce NOW**. Pair as
-**Xbox Wireless Controller**, then configure your game's fishing bindings:
+**Desk Timer**, then configure your game's fishing bindings. Games may still
+identify it as an XInput controller.
 
-| Onscreen action | Physical button | Controller input |
+| Onscreen action | Default physical button | Controller input |
 | --- | --- | --- |
 | Cast (top) | GPIO 35 | D-pad Left |
 | Reel (bottom) | GPIO 0 | Xbox X |
 
 The display shows BLE status and highlights held buttons.
 
+### Flip the screen
+
+**Hold Reel alone for two seconds** to rotate the display 180 degrees. The
+orientation is remembered across restarts. Button roles swap with the display,
+so **Cast stays on top and Reel stays on the bottom** in either orientation.
+The long hold only flips the screen; it does not send a Reel press.
+
 ### Controller mode
 
 This uses WoW's built-in controller support. With Soft Targeting on, the game itself
 targets the fishing bobber when it lands, so the Reel button is just the normal Interact
-input. The pad doesn't detect bites or target anything on its own.
+input. In controller mode, the game handles bobber targeting and interaction.
 
 Controller mode must be enabled in the game's settings first, if it isn't already. See
 [Playing WoW with a controller](https://www.icy-veins.com/wow-forever/playing-with-controller)
@@ -43,14 +51,11 @@ locally. The selected display mode is remembered across restarts.
 
 ## Change the controls
 
-Edit the constants near the top of [TwoButtonPad.ino](TwoButtonPad/TwoButtonPad.ino):
-
-```cpp
-constexpr uint8_t REEL_BUTTON = BUTTON_3;  // X; 1=A, 2=B, 4=Y
-constexpr int8_t CAST_DIRECTION = HAT_LEFT; // HAT_UP / DOWN / RIGHT also work
-```
-
-Change `xButton{0}` / `leftButton{35}` for different GPIOs. Edit the `Cast` / `Reel`
+GPIOs are defined by `gpio0Button` / `gpio35Button` in
+[TwoButtonPad.ino](TwoButtonPad/TwoButtonPad.ino). The `castButton()` / `reelButton()`
+helpers apply the orientation-aware roles. Controller report mappings are in
+`FishingPad::send()` in [DualBluetooth.h](TwoButtonPad/DualBluetooth.h).
+Edit the `Cast` / `Reel`
 strings in the drawing functions to rename the labels. Rebuild and flash afterward.
 Do not hold GPIO 0 while powering on: it also selects the ESP32 bootloader.
 
@@ -67,12 +72,15 @@ A ready-made firmware is in [`docs/firmware/`](docs/firmware/TwoButtonPad-t-disp
 2. Plug the T-Display into the computer with a USB **data** cable.
 3. Click **Install**, pick the board's serial port (e.g. *USB Serial*, *CP210x* or
    *CH340*, or `COMx` on Windows), and confirm. It takes about a minute.
-4. Pair the pad with your phone as **Xbox Wireless Controller**.
+4. Pair the pad with your phone as **Desk Timer**.
 
 The page uses [ESP Web Tools](https://esphome.github.io/esp-web-tools/): the firmware is
 sent from your browser straight to the board over USB, and nothing is installed.
-The installer offers an **Erase device** checkbox. Tick it for a clean first install; it
-also removes earlier pairings, so remove the pad from your phone's Bluetooth list and pair again.
+The bundled firmware is a **full-flash image**: installing it resets saved
+Bluetooth pairings and display preferences, even if **Erase device** is unchecked.
+Remove the old phone pairing and pair **Desk Timer** again after updating.
+The **Erase device** checkbox additionally offers a complete flash erase for a
+clean installation.
 
 **No serial port listed?**
 
@@ -83,7 +91,7 @@ also removes earlier pairings, so remove the pad from your phone's Bluetooth lis
   often install it automatically.
 - **Linux:** add yourself to the serial group (`dialout` on Debian/Ubuntu/Fedora,
   `uucp` on Arch), then log out and in again.
-- If connecting fails, hold the lower button (GPIO 0) while plugging the board in, click
+- If connecting fails, hold the GPIO 0 / BOOT button while plugging the board in, click
   **Install** again, and release once flashing starts.
 
 ### Command line
@@ -100,8 +108,8 @@ Use `COM3` or similar on Windows. The firmware targets the original T-Display v1
 ## Build from source
 
 Requires Arduino CLI, **esp32:esp32 3.3.10**, and **M5GFX 0.2.19**.
-NimBLE and the patched ESP32-BLE-Gamepad library are included under `libraries/`;
-see [DEPENDENCIES.txt](DEPENDENCIES.txt) for pinned versions and patches.
+The controller descriptor and its third-party license are included under
+`libraries/`; see [DEPENDENCIES.txt](DEPENDENCIES.txt) for pinned versions and patches.
 
 ```sh
 arduino-cli core update-index --additional-urls \

@@ -16,9 +16,13 @@
     <li>Use <strong>Chrome or Edge</strong> on a computer (Firefox and Safari lack Web Serial).</li>
     <li>Plug the board in with a USB <em>data</em> cable.</li>
     <li>Click <em>Install</em>, choose the board's serial port, and wait about a minute.</li>
-    <li>Pair it with your phone as an <strong>Xbox Wireless Controller</strong>.</li>
+    <li>Pair it with your phone as <strong>Desk Timer</strong>.</li>
   </ol>
-  <esp-web-install-button manifest="manifest.json">
+  <p>Hold <strong>Reel for two seconds</strong> to flip the screen. Its orientation is saved,
+  and button roles follow it so Cast stays above Reel.</p>
+  <p><small>Installing the full firmware image resets saved pairings and display preferences.
+  Remove the old phone pairing and pair Desk Timer again after updating.</small></p>
+  <esp-web-install-button manifest="manifest.json?v=1.1">
     <span slot="unsupported">This browser can't flash devices. Use Chrome or Edge on a computer.</span>
   </esp-web-install-button>
   <p><small>Not working? See the troubleshooting section of the
