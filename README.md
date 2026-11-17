@@ -49,6 +49,20 @@ locally. The selected display mode is remembered across restarts.
 
 ![Desk-timer mode](assets/desk-timer.png)
 
+### Controller connected, but not working in-game?
+
+On iPhone with GeForce NOW in Safari or its Home Screen web app (PWA):
+
+1. Open the [gamepad tester](https://hardwaretester.com/gamepad) in Safari on the
+   same phone. Press Cast and Reel and check that the tester registers both inputs.
+   If neither registers, check the Bluetooth connection before troubleshooting the game.
+2. If the tester works, return to the game, tap the stream, and try the buttons
+   again. Check that controller support and the fishing bindings are enabled in-game.
+3. Close and reopen GeForce NOW with the controller already connected.
+4. If input still works in the tester but not in GeForce NOW, remove the GeForce
+   NOW web app from the Home Screen. Open GeForce NOW in Safari, use **Share → Add
+   to Home Screen** to set it up again, then launch it and sign in as needed.
+
 ## Change the controls
 
 GPIOs are defined by `gpio0Button` / `gpio35Button` in
