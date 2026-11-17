@@ -7,7 +7,7 @@
       "chipFamily": "ESP32",
       "parts": [
         {
-          "path": "firmware/TwoButtonPad-t-display-v1.1.bin?sha256=d089503a3299ec8bfe9687d9b8eae15e4161330068ea8221e3b080c9ed6c6bf6",
+          "path": "firmware/TwoButtonPad-t-display-v1.1.bin?sha256=92b5ad952b4c463e88e985fbb6ae5ec214f8f5c4165f6b9cf2d0b79cb5db12e7",
           "offset": 0
         }
       ]
