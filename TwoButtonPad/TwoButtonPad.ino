@@ -87,6 +87,15 @@ Button &castButton() { return displayFlipped ? gpio0Button : gpio35Button; }
 InputRouter inputRouter;
 uint8_t previousHid = 0;
 uint32_t displayedSecond = UINT32_MAX;
+uint32_t timerStartedAt = 0;
+uint32_t timerCaught = UINT32_MAX, timerMissed = UINT32_MAX;
+
+void formatCounts(char *buffer, size_t size, const char *label) {
+  char caught[8], missed[8];
+  snprintf(caught,sizeof(caught),"%lu%s",(unsigned long)(automatic.caught>9999 ? 9999 : automatic.caught),automatic.caught>9999 ? "+" : "");
+  snprintf(missed,sizeof(missed),"%lu%s",(unsigned long)(automatic.missed>9999 ? 9999 : automatic.missed),automatic.missed>9999 ? "+" : "");
+  snprintf(buffer,size,"%s %s/%s",label,caught,missed);
+}
 
 void drawTimer(bool connected, bool fullRefresh = true) {
   const uint16_t foreground = canvas->color565(180, 187, 191);
@@ -97,7 +106,7 @@ void drawTimer(bool connected, bool fullRefresh = true) {
     canvas->setTextColor(canvas->color565(91, 100, 105), TFT_BLACK);
     canvas->drawCentreString(connected ? "Bluetooth connected" : "Bluetooth ready", 120, 111, 2);
   }
-  uint32_t elapsed = millis() / 1000;
+  uint32_t elapsed = uint32_t(millis() - timerStartedAt) / 1000;
   char timer[12];
   snprintf(timer, sizeof(timer), "%02lu:%02lu:%02lu",
     (unsigned long)((elapsed / 3600) % 100),
@@ -106,6 +115,14 @@ void drawTimer(bool connected, bool fullRefresh = true) {
   canvas->setTextPadding(220);
   canvas->drawCentreString(timer, 120, 45, 6);
   canvas->setTextPadding(0);
+  if (autonomousMode && (fullRefresh || timerCaught != automatic.caught || timerMissed != automatic.missed)) {
+    char counts[24];
+    formatCounts(counts, sizeof(counts), "Count");
+    canvas->fillRect(0, 89, 240, 20, TFT_BLACK);
+    canvas->setTextColor(foreground, TFT_BLACK);
+    canvas->drawCentreString(counts, 120, 90, 2);
+    if (canvas == &screen) { timerCaught = automatic.caught; timerMissed = automatic.missed; }
+  }
 }
 
 
@@ -132,10 +149,8 @@ void drawAutoStatus() {
   canvas->setTextColor(automatic.running() ? TFT_GREEN : TFT_ORANGE, TFT_BLACK);
   canvas->drawString(status, 8, 24, 2);
   // Bound display width even during very long sessions; totals remain 32-bit.
-  char caught[8], missed[8], counts[24];
-  snprintf(caught,sizeof(caught),"%lu%s",(unsigned long)(automatic.caught>9999 ? 9999 : automatic.caught),automatic.caught>9999 ? "+" : "");
-  snprintf(missed,sizeof(missed),"%lu%s",(unsigned long)(automatic.missed>9999 ? 9999 : automatic.missed),automatic.missed>9999 ? "+" : "");
-  snprintf(counts,sizeof(counts),"Fish %s/%s",caught,missed);
+  char counts[24];
+  formatCounts(counts, sizeof(counts), "Fish");
   // Prioritize explanatory fault text over counters if that line is too long.
   if (canvas->textWidth(status,&lgfx::fonts::Font2)+8+canvas->textWidth(counts,&lgfx::fonts::Font2)<=224) {
     canvas->setTextColor(TFT_WHITE,TFT_BLACK);
@@ -147,7 +162,7 @@ void drawAutoStatus() {
   }
 }
 void draw(bool connected) {
-  if (neutralMode && !autonomousMode) { drawTimer(connected); return; }
+  if (neutralMode) { drawTimer(connected); return; }
   canvas->fillScreen(TFT_BLACK);
   canvas->setTextColor(canvas->color565(239, 201, 112), TFT_BLACK);
   canvas->drawCentreString("Two Button Fishing Pad", 120, 3, 2);
@@ -354,7 +369,18 @@ void loop() {
   if (waitingRelease) {
     if (!castButton().down && !reelButton().down) { waitingRelease = false; gestureConsumed = false; }
   } else if (autonomousMode) {
-    if (reelTap) {
+    if (castButton().down && reelButton().down) {
+      neutralMode = !neutralMode;
+      uiPreferences.putBool("neutral", neutralMode);
+      pendingCast = pendingReel = false;
+      gestureConsumed = waitingRelease = true;
+      inputRouter = InputRouter();
+      modeChanged = true;
+    } else if (neutralMode && changedCast && !castButton().down && pendingCast) {
+      timerStartedAt = now;
+      pendingCast = false;
+      modeChanged = true;
+    } else if (reelTap) {
       if (automatic.running()) { automatic.stop(); castAmplitude.reset(); }
       else if (connected && audioReady && detector.calibrated) {
         detector.reset(); castAmplitude.reset(); automatic.start(now, minimumMs);
@@ -426,8 +452,9 @@ void loop() {
   if (!automatic.running()) castAmplitude.reset();
   const uint32_t second = now / 1000;
   if (modeChanged || changedConnection || changedBleStatus) draw(connected);
-  else if (neutralMode && !autonomousMode && second != displayedSecond) drawTimer(connected, false);
-  else if (!neutralMode || autonomousMode) {
+  else if (neutralMode && (second != displayedSecond ||
+      (autonomousMode && (timerCaught != automatic.caught || timerMissed != automatic.missed)))) drawTimer(connected, false);
+  else if (!neutralMode) {
     if (changedCast) tile(true, autonomousMode ? "Exit(2s)" : "Cast", castButton().down, TFT_GREEN);
     if (changedReel) tile(false, autonomousMode ? (automatic.running() ? "Stop" : "Start") : "Reel", reelButton().down, TFT_CYAN);
     if (autonomousMode && (lastAutoStatus != autoStatus() ||
